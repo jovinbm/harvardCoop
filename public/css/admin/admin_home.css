@@ -1,0 +1,9 @@
+body {
+    padding-top: 70px;
+    padding-bottom: 70px;
+}
+
+/*removing table row borders*/
+.table th, .table td {
+    border-top: none !important;
+}
