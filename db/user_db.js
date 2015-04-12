@@ -21,7 +21,21 @@ var errorLogger = function (module, text, err) {
 module.exports = {
 
     //finds a specific Harvard User
-    findUser: function (openId, error_neg_1, error_0, success) {
+    findUserWithUniqueCuid: function (uniqueCuid, error_neg_1, error_0, success) {
+        User.findOne({uniqueCuid: uniqueCuid}, {}).exec(
+            function (err, theUser) {
+                if (err) {
+                    error_neg_1(-1, err);
+                } else if (theUser == null || theUser == undefined) {
+                    error_0(0, err);
+                } else {
+                    success(theUser);
+                }
+            }
+        );
+    },
+
+    findUserWithOpenId: function (openId, error_neg_1, error_0, success) {
         User.findOne({openId: openId}).exec(
             function (err, theUser) {
                 if (err) {
@@ -45,6 +59,111 @@ module.exports = {
                     success(1, theUser);
                 } else {
                     success(-1, theUser);
+                }
+            }
+        );
+    },
+
+
+    addToCart: function (userUniqueCuid, component, error_neg_1, error_0, success) {
+        User.findOne({uniqueCuid: userUniqueCuid}, {}).exec(
+            function (err, theUser) {
+                if (err) {
+                    error_neg_1(-1, err);
+                } else if (theUser == null || theUser == undefined) {
+                    error_0(0, err);
+                } else {
+                    theUser.cart.push(component);
+                    theUser.save(function (err, savedUser) {
+                        if (err) {
+                            error_neg_1(-1, err);
+                        } else {
+                            success(savedUser);
+                        }
+                    })
+                }
+            }
+        );
+    },
+
+
+    increaseQuantity: function (userUniqueCuid, componentUniqueCuid, error_neg_1, error_0, success) {
+        User.update({
+            uniqueCuid: userUniqueCuid,
+            "cart.componentUniqueCuid": componentUniqueCuid
+        }, {
+            $inc: {"cart.$.quantity": 1}
+        }).exec(
+            function (err) {
+                if (err) {
+                    error_neg_1(-1, err);
+                } else {
+                    User.findOne({uniqueCuid: userUniqueCuid}, {}).exec(
+                        function (err, theUser) {
+                            if (err) {
+                                error_neg_1(-1, err);
+                            } else if (theUser == null || theUser == undefined) {
+                                error_0(0, err);
+                            } else {
+                                success(theUser);
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    },
+
+
+    decreaseQuantity: function (userUniqueCuid, componentUniqueCuid, error_neg_1, error_0, success) {
+        User.update({
+            uniqueCuid: userUniqueCuid,
+            "cart.componentUniqueCuid": componentUniqueCuid,
+            "cart.quantity": {$gt: 1}
+        }, {
+            $inc: {"cart.$.quantity": -1}
+        }).exec(
+            function (err) {
+                if (err) {
+                    error_neg_1(-1, err);
+                } else {
+                    User.findOne({uniqueCuid: userUniqueCuid}, {}).exec(
+                        function (err, theUser) {
+                            if (err) {
+                                error_neg_1(-1, err);
+                            } else if (theUser == null || theUser == undefined) {
+                                error_0(0, err);
+                            } else {
+                                success(theUser);
+                            }
+                        }
+                    );
+                }
+            }
+        );
+    },
+
+
+    removeFromCart: function (userUniqueCuid, componentUniqueCuid, error_neg_1, error_0, success) {
+        User.findOne({uniqueCuid: userUniqueCuid}, {}).exec(
+            function (err, theUser) {
+                if (err) {
+                    error_neg_1(-1, err);
+                } else if (theUser == null || theUser == undefined) {
+                    error_0(0, err);
+                } else {
+                    theUser.cart.forEach(function (item) {
+                        if (item.componentUniqueCuid == componentUniqueCuid) {
+                            theUser.cart.splice(theUser.cart.indexOf(item), 1);
+                        }
+                    });
+                    theUser.save(function (err, savedUser) {
+                        if (err) {
+                            error_neg_1(-1, err);
+                        } else {
+                            success(savedUser);
+                        }
+                    })
                 }
             }
         );
@@ -81,6 +200,7 @@ module.exports = {
     saveUser: function (theUserObject, error_neg_1, error_0, success) {
         theUserObject.save(function (err, theSavedUser) {
             if (err) {
+                consoleLogger("ERROR HERE " + err);
                 error_neg_1(-1, err);
             } else {
                 success(theSavedUser);
@@ -99,25 +219,6 @@ module.exports = {
                     success();
                 }
             })
-    },
-
-    updateCuCls: function (openId, username, customLoggedInStatus, error_neg_1, error_0, success) {
-        User
-            .update({
-                openId: openId
-            }, {
-                $set: {
-                    username: username,
-                    customLoggedInStatus: customLoggedInStatus
-                }
-            }, function (err) {
-                if (err) {
-                    error_neg_1(-1, err);
-                } else {
-                    success();
-                }
-            }
-        )
     },
 
     updateGrillName: function (openId, grillName, error_neg_1, error_0, success) {
@@ -212,13 +313,13 @@ module.exports = {
     },
 
 
-    toggleCls: function (openId, newCustomLoggedInStatus, error_neg_1, error_0, success) {
+    toggleLoggedInIndex: function (openId, newLoggedInIndex, error_neg_1, error_0, success) {
         User
             .update({
                 openId: openId
             }, {
                 $set: {
-                    customLoggedInStatus: newCustomLoggedInStatus
+                    loggedInIndex: newLoggedInIndex
                 }
             }
         ).exec(function (err) {

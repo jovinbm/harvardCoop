@@ -5,9 +5,6 @@ var userDB = require('../db/user_db.js');
 function getTheUser(req) {
     return req.customData.theUser;
 }
-function getTheCurrentGrillStatus(req) {
-    return req.customData.currentGrillStatus;
-}
 
 var receivedLogger = function (module) {
     var rL = require('../functions/basic.js').receivedLogger;
@@ -49,7 +46,7 @@ module.exports = {
 
         function success() {
             consoleLogger(successLogger(module));
-            //the logout_api toggles the customLoggedInStatus -- respond with a success, angular client will redirect
+            //the logout_api toggles the loggedInIndex -- respond with a success, angular client will redirect
             res.status(200).send({
                 code: 200,
                 notify: false,
@@ -110,7 +107,7 @@ module.exports = {
         userDB.updateGrillName(theUser.openId, 'default', error, error, success);
         function success() {
             consoleLogger(successLogger(module));
-            //the logout_api toggles the customLoggedInStatus -- respond with a success, client will redirect
+            //the logout_api toggles the loggedInIndex -- respond with a success, client will redirect
             res.status(200).send({
                 code: 200,
                 notify: false,

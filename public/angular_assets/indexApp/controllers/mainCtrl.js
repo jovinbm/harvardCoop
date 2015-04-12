@@ -1,10 +1,8 @@
 angular.module('indexApp')
-    .controller('MainController', ['$q', '$filter', '$log', '$interval', '$window', '$location', '$scope', '$rootScope', 'socket', 'mainService', 'socketService', 'globals',
-        function ($q, $filter, $log, $interval, $window, $location, $scope, $rootScope, socket, mainService, socketService, globals) {
+    .controller('MainController', ['$q', '$filter', '$log', '$interval', '$window', '$location', '$scope', '$rootScope', 'socket', 'mainService', 'socketService', 'globals', '$modal',
+        function ($q, $filter, $log, $interval, $window, $location, $scope, $rootScope, socket, mainService, socketService, globals, $modal) {
 
-            $scope.allGrillStatuses = globals.allGrillStatuses(null, true, true);
-
-            //================request error handler==================
+            //===============request error handler===============
 
             //universalDisable variable is used to disable everything crucial in case an error
             //occurs.This is sometimes needed if a reload did not work
@@ -68,10 +66,10 @@ angular.module('indexApp')
             });
 
 
-            //***************end of request error handler**************
+            //===============end of request error handler===============
 
 
-            //*****************************isLoading functions to disable elements while content is loading or processing
+            //===============isLoading functions to disable elements while content is loading or processing===============
             $scope.isLoading = false;
 
             $scope.isLoadingTrue = function () {
@@ -89,9 +87,9 @@ angular.module('indexApp')
                 $scope.isLoading = false;
             });
 
-            //**********************************end of isLoading functions
+            //===============end of isLoading functions===============
 
-            //********************toastr show functions
+            //===============toastr show functions===============
             $scope.showToast = function (toastType, text) {
                 switch (toastType) {
                     case "success":
@@ -126,19 +124,17 @@ angular.module('indexApp')
                 $scope.showToast(toastType, text);
             });
 
-            //****************************end of toastr show functions
+            //===============end of toastr show functions===============
 
             //initial requests
-            socketService.getMyTemporarySocketRoom()
+            socketService.getUserData()
                 .success(function (resp) {
-                    $scope.temporarySocketRoom = globals.temporarySocketRoom(resp.temporarySocketRoom);
+                    $scope.userData = globals.userData(resp.userData);
 
-                    //join the random temporary socketRoom given
+                    //join a socketRoom for websocket connection
                     socket.emit('joinRoom', {
-                        room: resp.temporarySocketRoom
+                        room: resp.userData.uniqueCuid
                     });
-
-                    //a success emit("joined") is picked up below
 
                     $scope.responseStatusHandler(resp);
                 })
@@ -147,9 +143,74 @@ angular.module('indexApp')
                 });
 
             socket.on('joined', function () {
-                pollAllGrillStatuses();
+                console.log("JOIN SUCCESS");
             });
 
+            //==================cart functions=====================
+
+            $scope.addToCart = function (componentUniqueCuid) {
+                var component = {
+                    componentUniqueCuid: componentUniqueCuid,
+                    quantity: 1
+                };
+
+                socketService.addToCart(component)
+                    .success(function (resp) {
+                        $scope.userData = globals.userData(resp.userData);
+                        $scope.responseStatusHandler(resp);
+                        $rootScope.$broadcast('cartChanges');
+                    })
+                    .error(function (errResponse) {
+                        $scope.responseStatusHandler(errResponse);
+                    })
+            };
+
+            $rootScope.$on('addToCart', function (event, componentUniqueCuid) {
+                $scope.addToCart(componentUniqueCuid);
+            });
+
+            $scope.removeFromCart = function (componentUniqueCuid) {
+
+                socketService.removeFromCart(componentUniqueCuid)
+                    .success(function (resp) {
+                        $scope.userData = globals.userData(resp.userData);
+                        $scope.responseStatusHandler(resp);
+                        $rootScope.$broadcast('cartChanges');
+                    })
+                    .error(function (errResponse) {
+                        $scope.responseStatusHandler(errResponse);
+                    })
+            };
+
+            $rootScope.$on('removeFromCart', function (event, componentUniqueCuid) {
+                $scope.removeFromCart(componentUniqueCuid);
+            });
+
+            $scope.increaseQuantity = function (componentUniqueCuid) {
+                socketService.increaseQuantity(componentUniqueCuid)
+                    .success(function (resp) {
+                        $scope.userData = globals.userData(resp.userData);
+                        $scope.responseStatusHandler(resp);
+                        $rootScope.$broadcast('cartChanges');
+                    })
+                    .error(function (errResponse) {
+                        $scope.responseStatusHandler(errResponse);
+                    })
+            };
+
+            $scope.decreaseQuantity = function (componentUniqueCuid) {
+                socketService.decreaseQuantity(componentUniqueCuid)
+                    .success(function (resp) {
+                        $scope.userData = globals.userData(resp.userData);
+                        $scope.responseStatusHandler(resp);
+                        $rootScope.$broadcast('cartChanges');
+                    })
+                    .error(function (errResponse) {
+                        $scope.responseStatusHandler(errResponse);
+                    })
+            };
+
+            //==================end of cart functions===============
 
             //variable to hold state between local login and creating a new account
             //values =  signIn, register
@@ -158,7 +219,7 @@ angular.module('indexApp')
                 $scope.userLoginState = newState;
             };
 
-            //************THE LOCAL LOGIN FORM*****************
+            //===============THE LOCAL LOGIN FORM===============
 
             $scope.loginFormModel = {
                 username: "",
@@ -172,16 +233,15 @@ angular.module('indexApp')
                         $scope.responseStatusHandler(resp);
                     })
                     .error(function (errResponse) {
-                        globals.allGrillStatuses(null, true, true);
                         $scope.loginFormModel.password = "";
                         $scope.responseStatusHandler(errResponse);
                     });
             };
 
-            //*************END OF LOCAL LOGIN FORM FUNCTIONS*********
+            //===============END OF LOCAL LOGIN FORM FUNCTIONS===============
 
-            //*******************REGISTRATION FORM
-            //******************registration details and functions
+            //===============REGISTRATION FORM===============
+            //===============registration details and functions===============
             $scope.registrationDetails = {
                 email: "",
                 firstName: "",
@@ -207,9 +267,9 @@ angular.module('indexApp')
                         $scope.responseStatusHandler(errResponse);
                     });
             };
-            //*******************END OF REGISTRATION FORM
+            //===============END OF REGISTRATION FORM===============
 
-            //======================contact us form==============
+            //===============contact us form===============
             $scope.contactUsModel = {
                 name: "",
                 email: "",
@@ -252,40 +312,12 @@ angular.module('indexApp')
                 }
             };
 
-            //==============================end of contactU s
+            //===============end of contactUs===============
 
 
-            //*********crucial intervals
-
-            //polls current grill status
-            function pollAllGrillStatuses() {
-                globals.allGrillStatuses(null, true, true);
-            }
-
-            $interval(pollAllGrillStatuses, 300000, 0, true);
-            //**********end of crucial intervals
-
-
-            //**********************socket listeners
-
-            socket.on('adminChanges', function () {
-                $log.info("'adminChanges' event received");
-                $rootScope.$broadcast('adminChanges');
-            });
-
-            //refresh everything on orderStatusChange
-            $rootScope.$on('adminChanges', function () {
-                globals.allGrillStatuses(null, true, true);
-            });
-
-            //receives grill status
-            $rootScope.$on('allGrillStatuses', function (event, allGrillStatuses) {
-                $scope.allGrillStatuses = allGrillStatuses;
-            });
-
+            //===============socket listeners===============
 
             $rootScope.$on('reconnectSuccess', function () {
-                globals.allGrillStatuses(null, true, true);
             });
 
             $log.info('MainController booted successfully');

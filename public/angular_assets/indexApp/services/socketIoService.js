@@ -48,14 +48,10 @@ angular.module('indexApp')
 
             return {
 
-                getMyTemporarySocketRoom: function () {
+                getUserData: function () {
                     //give this user a temporary socketRoom using cuid()
                     //when the server does not find the user
-                    return $http.get('/api/getTemporarySocketRoom');
-                },
-
-                getAllGrillStatuses: function () {
-                    return $http.post('/api/getAllGrillStatuses');
+                    return $http.get('/api/getUserData');
                 },
 
                 createAccount: function (details) {
@@ -68,6 +64,30 @@ angular.module('indexApp')
 
                 sendContactUs: function (contactUsModel) {
                     return $http.post('/contactUs', contactUsModel);
+                },
+
+                addToCart: function (componentObject) {
+                    return $http.post('/api/addToCart', {
+                        component: componentObject
+                    });
+                },
+
+                increaseQuantity: function (componentUniqueCuid) {
+                    return $http.post('/api/increaseQuantity', {
+                        componentUniqueCuid: componentUniqueCuid
+                    });
+                },
+
+                decreaseQuantity: function (componentUniqueCuid) {
+                    return $http.post('/api/decreaseQuantity', {
+                        componentUniqueCuid: componentUniqueCuid
+                    });
+                },
+
+                removeFromCart: function (componentUniqueCuid) {
+                    return $http.post('/api/removeFromCart', {
+                        componentUniqueCuid: componentUniqueCuid
+                    });
                 }
             }
         }

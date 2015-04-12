@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1 maximum-scale=1, user-scalable=no">
-    <meta name="description" content="Harvard Grill Website"/>
+    <meta name="description" content="The Coop"/>
     <meta name="author" content="Jovin Mwilanga"/>
     <link rel="author" href="https://plus.google.com/+JovinMwilanga"/>
 
@@ -58,14 +58,14 @@
         }
     </script>
 
-    <title>HarvardGrill - Login</title>
+    <title>The COOP</title>
 </head>
 
 <body>
 
 <!--start of nav-->
 <nav class="navbar navbar-default navbar-fixed-top">
-    <div class="container">
+    <div class="container-fluid">
         <div class="navbar-header">
             <!--button to target the navbar-right which will appear on collapse of navbar items-->
             <button type="button" class='navbar-toggle collapsed' data-toggle="collapse"
@@ -77,8 +77,10 @@
             <a href="#top"
                du-smooth-scroll du-scrollspy
                class="navbar-brand">
-                <i class="fa fa-spoon"></i>
-                HarvardGrill
+                <img alt="Brand"
+                     class="img-responsive"
+                     style="max-width:100px; max-height: 50px; margin-top: -15px;"
+                     src="/public/imgs/thecoop_logo.gif">
             </a>
         </div>
 
@@ -86,7 +88,19 @@
         <div class="collapse navbar-collapse navHeaderCollapse">
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <a href="#services" du-smooth-scroll du-scrollspy>Services</a>
+                    <a href="#">Home</a>
+                </li>
+                <li>
+                    <a href="#">About</a>
+                </li>
+                <li>
+                    <a href="#">Services</a>
+                </li>
+                <li>
+                    <a href="#">About</a>
+                </li>
+                <li>
+                    <a href="#contact" du-smooth-scroll du-scrollspy>Contact Us</a>
                 </li>
                 <li>
                     <a href="#login"
@@ -98,76 +112,191 @@
                        du-smooth-scroll du-scrollspy
                        ng-click="changeUserLoginState('signIn')">Sign In</a>
                 </li>
+                <li>
+                    <a href="#cart"
+                       du-smooth-scroll du-scrollspy><i class="fa fa-shopping-cart fa-lg"></i>({{userData.cart.length}})</a>
+                </li>
             </ul>
         </div>
     </div>
 </nav>
+
+<!--second nav-->
+<nav class="navbar navbar-default navbar-lower hidden-xs" role="navigation">
+    <div class="container-fluid">
+        <!--this navbar will be collapsed on mobile-->
+
+        <ul class="nav navbar-nav navbar-right">
+            <li>
+                <a href="#" du-smooth-scroll du-scrollspy>Shop Harvard</a>
+            </li>
+            <li>
+                <a href="#" du-smooth-scroll du-scrollspy>Shop MIT</a>
+            </li>
+            <li>
+                <a href="#" du-smooth-scroll du-scrollspy>Textbooks</a>
+            </li>
+            <li>
+                <a href="#" du-smooth-scroll du-scrollspy>MemberShip</a>
+            </li>
+            <li>
+                <a href="#" du-smooth-scroll du-scrollspy>Coop Plus</a>
+            </li>
+        </ul>
+
+        <form class="navbar-form">
+            <div class="form-group" style="display:inline;">
+                <div class="input-group" style="display:table;">
+                    <span class="input-group-addon" style="width:1%;"><span
+                                class="glyphicon glyphicon-search"></span></span>
+                    <input class="form-control" name="search" placeholder="Search Here" autocomplete="off"
+                           autofocus="autofocus" type="text">
+                </div>
+            </div>
+        </form>
+    </div>
+</nav>
+<!--end of second nav-->
 <!--end of nav-->
 
-<div>
-    <header id="top">
-        <div class="container">
-            <div class="intro-text animated pulse">
-                <div class="intro-heading">GRILL ORDER //</div>
-                <div class="intro-lead-in">Lunch &amp; Dinner</div>
-                <a href="#login"
-                   du-smooth-scroll du-scrollspy
-                   ng-click="changeUserLoginState('register')"
-                   class="btn btn-xl">REGISTER
-                </a>
-                <a href="#login"
-                   du-smooth-scroll du-scrollspy
-                   ng-click="changeUserLoginState('signIn')"
-                   class="btn btn-xl">SIGN IN
-                </a>
-            </div>
-        </div>
+<div class="main_body"
+     ng-controller="FeaturedController">
+    <header id="top"
+            ng-mouseover="mouseOverFeatured = true"
+            ng-mouseleave="mouseOverFeatured = false">
+        <img ng-src="{{currentFeaturedImage.src}}"
+             class="img-responsive featured_Image animated fadeIn"/>
     </header>
 
-    <!-- Services Section -->
-    <section id="services">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12 text-center">
-                    <h2 class="section-heading">Services</h2>
+    <!-- sections -->
+    <section id="hot">
 
-                    <h3 class="section-subheading text-muted">OUR USERS ENJOY A DIVERSE ARRAY OF SERVICES.</h3>
-                </div>
-            </div>
-            <div class="row text-center">
-                <div class="col-md-4">
-                    <span class="fa-stack fa-4x">
-                        <i class="fa fa-circle fa-stack-2x text-primary"></i>
-                        <i class="fa fa-cutlery fa-stack-1x fa-inverse"></i>
-                    </span>
-                    <h4 class="service-heading">ORDER ONLINE</h4>
-
-                    <p class="text-muted">Place your orders online from your comfort zone. Anytime, Anywhere!</p>
-                </div>
-                <div class="col-md-4">
-                    <span class="fa-stack fa-4x">
-                        <i class="fa fa-circle fa-stack-2x text-primary"></i>
-                        <i class="fa fa fa-eye fa-stack-1x fa-inverse"></i>
-                    </span>
-                    <h4 class="service-heading">Profiling</h4>
-
-                    <p class="text-muted">Keep an eye on what you eat. Enjoy personal records and keep track of the
-                        number
-                        of calories you eat every meal</p>
-                </div>
-                <div class="col-md-4">
-                    <span class="fa-stack fa-4x">
-                        <i class="fa fa-circle fa-stack-2x text-primary"></i>
-                        <i class="fa fa-birthday-cake fa-stack-1x fa-inverse"></i>
-                    </span>
-                    <h4 class="service-heading">Catering</h4>
-
-                    <p class="text-muted">Whether it's a birthday party, or a graduation ceremony, we'll help you make
-                        it a
-                        unique and memorable event.</p>
-                </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Hot this week</h2>
             </div>
         </div>
+
+        <div class="row horizontal_scrollabble">
+            <div class="imgSellPointImage text-center"
+                 ng-repeat="img in hotThisWeek"
+                 ng-mouseover="img.show = true"
+                 ng-mouseleave="img.show = false">
+                <a href="#" class="thumbnail imgSellPointThumbnail">
+                    <img ng-src="{{img.src}}"
+                         class="img-responsive imgSellPoint"/>
+                    <a href="#"
+                       class="btn btn-default btn-sm img-button-overlay animated fadeInUp"
+                       ng-show="img.show"
+                       ng-click="openQuickView('hotThisWeek', $index)">Quick Look</a>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <section id="promotions">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Don't miss</h2>
+            </div>
+        </div>
+
+        <div class="row horizontal_scrollabble">
+            <div class="imgSellPointImage"
+                 ng-repeat="img in promotions"
+                 ng-mouseover="img.show = true"
+                 ng-mouseleave="img.show = false">
+                <a href="#" class="thumbnail imgSellPointThumbnail">
+                    <img ng-src="{{img.src}}"
+                         class="img-responsive imgSellPoint"/>
+                    <a href="#"
+                       class="btn btn-default btn-sm img-button-overlay animated fadeInUp"
+                       ng-show="img.show"
+                       ng-click="openQuickView('promotions', $index)">Quick Look</a>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <section id="inspired">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Inspired by your shopping trends</h2>
+            </div>
+        </div>
+
+        <div class="row horizontal_scrollabble">
+            <div class="imgSellPointImage"
+                 ng-repeat="img in inspiredItems"
+                 ng-mouseover="img.show = true"
+                 ng-mouseleave="img.show = false">
+                <a href="#" class="thumbnail imgSellPointThumbnail">
+                    <img ng-src="{{img.src}}"
+                         class="img-responsive imgSellPoint"/>
+                    <a href="#"
+                       class="btn btn-default btn-sm img-button-overlay animated fadeInUp"
+                       ng-show="img.show"
+                       ng-click="openQuickView('inspiredItems', $index)">Quick Look</a>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <section id="recentRelated">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Related to Items You've Viewed</h2>
+            </div>
+        </div>
+
+        <div class="row horizontal_scrollabble">
+            <div class="imgSellPointImage"
+                 ng-repeat="img in relatedToRecentlyViewed"
+                 ng-mouseover="img.show = true"
+                 ng-mouseleave="img.show = false">
+                <a href="#" class="thumbnail imgSellPointThumbnail">
+                    <img ng-src="{{img.src}}"
+                         class="img-responsive imgSellPoint"/>
+                    <a href="#"
+                       class="btn btn-default btn-sm img-button-overlay animated fadeInUp"
+                       ng-show="img.show"
+                       ng-click="openQuickView('relatedToRecentlyViewed', $index)">Quick Look</a>
+                </a>
+            </div>
+        </div>
+
+    </section>
+
+    <section id="discover">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Discover</h2>
+            </div>
+        </div>
+
+        <div class="row horizontal_scrollabble">
+            <div class="imgSellPointImage"
+                 ng-repeat="img in discover"
+                 ng-mouseover="img.show = true"
+                 ng-mouseleave="img.show = false">
+                <a href="#" class="thumbnail imgSellPointThumbnail">
+                    <img ng-src="{{img.src}}"
+                         class="img-responsive imgSellPoint"/>
+                    <a href="#"
+                       class="btn btn-default btn-sm img-button-overlay animated fadeInUp"
+                       ng-show="img.show"
+                       ng-click="openQuickView('discover', $index)">Quick Look</a>
+                </a>
+            </div>
+        </div>
+
     </section>
 
     <section id="login">
@@ -287,7 +416,7 @@
 
                         <div class="row text-center">
                             <div class="padding-top-20 padding-bottom-15">
-                                New to HarvardGrill?
+                                New to theCOOP?
                             </div>
 
                             <a class="btn btn-danger btn-create-account"
@@ -568,6 +697,69 @@
         <!--end of registration form-->
     </section>
 
+    <section id="cart"
+             ng-if="userData.cart.length > 0">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <h2 class="section-heading">Your Cart</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3 col-md-3 col-lg-2"
+                 ng-repeat="img in userData.cart">
+                <div class="thumbnail">
+                    <img ng-src="{{allItems[img.componentUniqueCuid].src}}"
+                         class="img-responsive imgSellPoint"/>
+
+                    <div class="caption clearfix">
+                        <h6>{{allItems[img.componentUniqueCuid].caption}} X {{img.quantity}}</h6>
+
+                        <p>Price: @{{allItems[img.componentUniqueCuid].price}}$</p>
+
+                        <div class="pull-right">
+                            <p><a href="#"
+                                  class="btn btn-default btn-xs"
+                                  role="button"
+                                  ng-click="removeFromCart(img.componentUniqueCuid)">Remove</a>
+                                <a href="#"
+                                   class="btn btn-default btn-xs"
+                                   role="button"
+                                   ng-click="increaseQuantity(img.componentUniqueCuid)"><i class="fa fa-plus"></i>
+                                </a>
+                                <a href="#"
+                                   class="btn btn-default btn-xs"
+                                   role="button"
+                                   ng-click="decreaseQuantity(img.componentUniqueCuid)"><i class="fa fa-minus"></i></a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <tr>
+                    <th>Items</th>
+                    <th>Total</th>
+                </tr>
+                <tr ng-repeat="img in userData.cart">
+                    <td>{{allItems[img.componentUniqueCuid].caption}} X {{img.quantity}} X
+                        {{allItems[img.componentUniqueCuid].price}}
+                    </td>
+                    <td>{{img.quantity * allItems[img.componentUniqueCuid].price}}$</td>
+                </tr>
+                <tr>
+                    <td><strong>TOTAL</strong></td>
+                    <td><strong>{{cartTotal}}$</strong></td>
+                </tr>
+            </table>
+        </div>
+
+    </section>
+
 
     <section id="contact">
         <div class="container">
@@ -677,7 +869,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <span class="copyright">Copyright &copy; HarvardGrill 2015</span>
+                    <span class="copyright">Copyright &copy; theCOOP 2015</span>
                 </div>
                 <div class="col-md-4">
                     <ul class="list-inline social-buttons">
@@ -761,14 +953,16 @@
         src="/bower_components/ngFx/dist/ngFx.min.js"></script>
 
 
-<script type="text/javascript" src="/public/js/local_login/local_login.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/indexApp.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/directives.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/filters.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/controllers/mainCtrl.js"></script>
+<script type="text/javascript" src="/public/angular_assets/indexApp/controllers/featuredCtrl.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/services/socketIoService.js"></script>
+<script type="text/javascript" src="/public/angular_assets/indexApp/controllers/ModalCtrls.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/services/mainFactory.js"></script>
 <script type="text/javascript" src="/public/angular_assets/indexApp/services/globals.js"></script>
+<script type="text/javascript" src="/public/angular_assets/indexApp/services/imgFactory.js"></script>
 
 </body>
 </html>

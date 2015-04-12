@@ -26,10 +26,6 @@ var errorLogger = function (module, text, err) {
     return eL('middleware.js', module, text, err);
 };
 
-function getTheUser(req) {
-    return req.customData.theUser;
-}
-
 module.exports = {
     sendWelcomeEmail: function (theUser) {
         transporter.sendMail({

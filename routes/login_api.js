@@ -2,7 +2,6 @@ var basic = require('../functions/basic.js');
 var forms = require('../functions/forms.js');
 var consoleLogger = require('../functions/basic.js').consoleLogger;
 var cuid = require('cuid');
-var Stats = require("../database/stats/stats_model.js");
 var User = require("../database/users/user_model.js");
 var userDB = require('../db/user_db.js');
 var passport = require('passport');
@@ -26,78 +25,75 @@ var errorLogger = function (module, text, err) {
 function getTheUser(req) {
     return req.customData.theUser;
 }
-function getTheCurrentGrillStatus(req) {
-    return req.customData.currentGrillStatus;
-}
 
-function getAllGrillStatuses(error_neg_1, error_0, success) {
-    //count the number available
-    Stats
-        .count()
-        .exec(function (err, total) {
-            if (err) {
-                error_neg_1(-1, err);
-            } else {
-                if (total == 0) {
-
-                    //there is no grill added, send empty result
-                    var allGrillStatuses = [];
-                    success(allGrillStatuses);
-                } else {
-                    //find and return the required
-                    Stats.find({}).exec(
-                        function (err, allGrillStatuses) {
-                            if (err) {
-                                error_neg_1(-1, err);
-                            } else if (allGrillStatuses == null || allGrillStatuses == undefined) {
-
-                                //this must still be an error since we made sure that there is a document with the given grillName
-                                error_neg_1(-1, err);
-                            } else {
-                                success(allGrillStatuses);
-                            }
-                        })
-                }
-            }
-        })
-}
 
 module.exports = {
 
-    getTemporarySocketRoom: function (req, res) {
-        var module = 'getTemporarySocketRoom';
+    getUserData: function (req, res) {
+        var module = 'getUserData';
         receivedLogger(module);
-        var temporarySocketRoom = cuid();
 
-        consoleLogger(successLogger(module));
-        res.status(200).send({
-            temporarySocketRoom: temporarySocketRoom
-        });
+        //this variable is used as reference for either deleting the session if the user is new
+        var thisIsANewUser = false;
 
-    },
-
-    getAllGrillStatuses: function (req, res) {
-        var module = "getAllGrillStatuses";
-        getAllGrillStatuses(errorAllGrillStatus, errorAllGrillStatus, success);
-
-        function success(allGrillStatuses) {
-            consoleLogger(successLogger(module));
-            res.status(200).send({
-                allGrillStatuses: allGrillStatuses
-            });
+        //check if the user still with the uniqueCuid in the request exists
+        if (req.isAuthenticated()) {
+            userDB.findUserWithUniqueCuid(req.user.uniqueCuid, serverError, serverError, success);
+        } else {
+            thisIsANewUser = true;
+            //create this user in
+            consoleLogger("=============NEW USER detected");
+            var theUser = {};
+            theUser.uniqueCuid = cuid();
+            theUser.isAdmin = 'no';
+            var newUser = new User(theUser);
+            userDB.saveUser(newUser, serverError, serverError, success);
         }
 
-        function errorAllGrillStatus(status, err) {
-            if (status == -1 || status == 0) {
-                consoleLogger(errorLogger(module, 'Could not retrieve allGrillStatuses', err));
-                res.status(500).send({
-                    code: 500,
-                    notify: true,
-                    type: 'error',
-                    msg: 'An error occurred. Please reload this page',
-                    disable: true
+        function success(theSavedUser) {
+            if (thisIsANewUser) {
+                req.logIn(theSavedUser, function (err) {
+                    if (err) {
+                        consoleLogger(errorLogger(module, err, err));
+                        return res.status(500).send({
+                            code: 500,
+                            notify: true,
+                            type: 'error',
+                            msg: "A problem occurred while retrieving your personalized settings. Please reload this page"
+                        });
+                    } else {
+                        //remove private data
+                        theSavedUser.openId = "";
+                        theSavedUser.password = "";
+                        consoleLogger(successLogger(module));
+                        return res.status(200).send({
+                            userData: theSavedUser
+                        });
+                    }
+                });
+            } else {
+                loggedIn();
+            }
+
+            function loggedIn() {
+                //remove private data
+                theSavedUser.openId = "";
+                theSavedUser.password = "";
+                consoleLogger(successLogger(module));
+                res.status(200).send({
+                    userData: theSavedUser
                 });
             }
+        }
+
+        function serverError() {
+            consoleLogger(errorLogger(module));
+            res.status(500).send({
+                code: 500,
+                notify: true,
+                type: 'error',
+                msg: "A problem occurred while retrieving your personalized settings. Please reload this page"
+            });
         }
     },
 
@@ -496,234 +492,6 @@ module.exports = {
                 bannerClass: 'alert alert-dismissible alert-warning',
                 msg: 'It seems like you have entered a wrong invitation code. Please check and try again'
             });
-        }
-    },
-
-    clientInfoLogin: function (req, res) {
-        var module = 'clientInfoLogin';
-        receivedLogger(module);
-
-        var password = req.body.password;
-        var grillName = req.body.grillName;
-        var theUser = getTheUser(req);
-
-        userDB.checkUserPassword(theUser.openId, password, errorPassword, errorPasswordBcrypt, successPassword);
-
-        function errorPassword(status, err) {
-            consoleLogger(errorLogger(module, 'error finding password', err));
-            res.status(401).send({
-                code: 401,
-                banner: true,
-                bannerClass: 'alert alert-dismissible alert-warning',
-                msg: 'Failed to log you in. Please try again'
-            });
-        }
-
-        function errorPasswordBcrypt(err) {
-            //means bcrypt ran into an error when comparing passwords
-            consoleLogger(errorLogger(module, 'error comparing passwords', err));
-            res.status(401).send({
-                code: 401,
-                banner: true,
-                bannerClass: 'alert alert-dismissible alert-warning',
-                msg: 'Failed to log you in. Please try again'
-            });
-        }
-
-        function successPassword(status) {
-            if (status == -1) {
-                consoleLogger(errorLogger(module, 'Password does not check'));
-                //means passwords don't match
-                res.status(401).send({
-                    code: 401,
-                    banner: true,
-                    bannerClass: 'alert alert-dismissible alert-warning',
-                    msg: 'The password you entered is incorrect. Please try again'
-                });
-            } else {
-                //means passwords check
-                //update the user with the current info
-                theUser.customLoggedInStatus = 1;
-                theUser.grillName = grillName;
-                userDB.saveUser(theUser, errorSaveUser, errorSaveUser, successSaveUser);
-
-                function successSaveUser() {
-                    var redirectPage = '';
-                    if (theUser.isAdmin == 'yes') {
-                        //setting redirect page if the user chose 'profile' as grill or not
-                        redirectPage = '/admin.html';
-                        if (grillName == 'profile') {
-                            redirectPage = '/adminProfile.html'
-                        }
-                        res.status(200).send({
-                            code: 200,
-                            redirect: true,
-                            redirectPage: redirectPage
-                        });
-                    } else if (theUser.isAdmin == 'no') {
-                        //setting redirect page if the user chose 'profile' as grill or not
-                        redirectPage = '/client.html';
-                        if (grillName == 'profile') {
-                            redirectPage = '/clientProfile.html'
-                        }
-                        res.status(200).send({
-                            code: 200,
-                            redirect: true,
-                            redirectPage: redirectPage
-                        });
-                    }
-                }
-
-                function errorSaveUser(status, err) {
-                    consoleLogger(errorLogger(module, 'error saving updated user', err));
-                    res.status(401).send({
-                        code: 401,
-                        banner: true,
-                        bannerClass: 'alert alert-dismissible alert-warning',
-                        msg: 'Failed to log you in. Please try again'
-                    });
-                }
-            }
-        }
-    },
-
-
-    adminInfoLogin: function (req, res, next) {
-        var module = 'adminInfoLogin';
-        var password = req.body.password;
-        var grillName = req.body.grillName;
-        var theUser = getTheUser(req);
-
-        userDB.checkUserPassword(theUser.openId, password, errorPassword, errorPasswordBcrypt, successPassword);
-
-        function errorPassword(status, err) {
-            consoleLogger(errorLogger(module, 'error finding password', err));
-            res.status(401).send({
-                code: 401,
-                banner: true,
-                bannerClass: 'alert alert-dismissible alert-warning',
-                msg: 'Failed to log you in. Please try again'
-            });
-        }
-
-        function errorPasswordBcrypt(err) {
-            //means bcrypt ran into an error when comparing passwords
-            consoleLogger(errorLogger(module, 'error comparing passwords', err));
-            res.status(401).send({
-                code: 401,
-                banner: true,
-                bannerClass: 'alert alert-dismissible alert-warning',
-                msg: 'Failed to log you in. Please try again'
-            });
-        }
-
-        function successPassword(status) {
-            if (status == -1) {
-                consoleLogger(errorLogger(module, 'Password does not check'));
-                //means passwords don't match
-                res.status(401).send({
-                    code: 401,
-                    banner: true,
-                    bannerClass: 'alert alert-dismissible alert-warning',
-                    msg: 'The password you entered is incorrect. Please try again'
-                });
-            } else {
-                //means passwords check
-                //update the user with the current info
-                theUser.customLoggedInStatus = 1;
-                theUser.grillName = grillName;
-                userDB.saveUser(theUser, errorSaveUser, errorSaveUser, successSaveUser);
-
-                function successSaveUser() {
-                    var redirectPage = '';
-                    if (theUser.isAdmin == 'yes') {
-                        //setting redirect page if the user chose 'profile' as grill or not
-                        redirectPage = '/admin.html';
-                        if (grillName == 'profile') {
-                            redirectPage = '/adminProfile.html'
-                        }
-                        res.status(200).send({
-                            code: 200,
-                            redirect: true,
-                            redirectPage: redirectPage
-                        });
-                    } else if (theUser.isAdmin == 'no') {
-                        //setting redirect page if the user chose 'profile' as grill or not
-                        redirectPage = '/client.html';
-                        if (grillName == 'profile') {
-                            redirectPage = '/clientProfile.html'
-                        }
-                        res.status(200).send({
-                            code: 200,
-                            redirect: true,
-                            redirectPage: redirectPage
-                        });
-                    }
-                }
-
-                function errorSaveUser(status, err) {
-                    consoleLogger(errorLogger(module, 'error saving updated user', err));
-                    res.status(401).send({
-                        code: 401,
-                        banner: true,
-                        bannerClass: 'alert alert-dismissible alert-warning',
-                        msg: 'Failed to log you in. Please try again'
-                    });
-                }
-            }
-        }
-
-    },
-
-    clientHomeStartUp: function (req, res) {
-        var module = 'clientHomeStartUp';
-        receivedLogger(module);
-        getAllGrillStatuses(errorAllGrillStatus, errorAllGrillStatus, success);
-
-        function success(allGrillStatuses) {
-            consoleLogger(successLogger(module));
-            res.status(200).send({
-                allGrillStatuses: allGrillStatuses
-            });
-        }
-
-        function errorAllGrillStatus(status, err) {
-            if (status == -1 || status == 0) {
-                consoleLogger(errorLogger(module, 'Could not retrieve allGrillStatuses', err));
-                res.status(500).send({
-                    code: 500,
-                    notify: true,
-                    type: 'error',
-                    msg: 'An error occurred. Please reload this page',
-                    disable: true
-                });
-            }
-        }
-    },
-
-    adminHomeStartUp: function (req, res) {
-        var module = 'adminHomeStartUp';
-        receivedLogger(module);
-        getAllGrillStatuses(errorAllGrillStatus, errorAllGrillStatus, success);
-
-        function success(allGrillStatuses) {
-            consoleLogger(successLogger(module));
-            res.status(200).send({
-                allGrillStatuses: allGrillStatuses
-            });
-        }
-
-        function errorAllGrillStatus(status, err) {
-            if (status == -1 || status == 0) {
-                consoleLogger(errorLogger(module, 'Could not retrieve allGrillStatuses', err));
-                res.status(500).send({
-                    code: 500,
-                    notify: true,
-                    type: 'error',
-                    msg: 'An error occurred. Please reload this page',
-                    disable: true
-                });
-            }
         }
     }
 };

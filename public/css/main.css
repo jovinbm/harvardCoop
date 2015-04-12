@@ -15,7 +15,7 @@ h3,
 h4,
 h5,
 h6 {
-    text-transform: uppercase;
+    /*text-transform: uppercase;*/
     font-family: Montserrat, "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 700;
 }
@@ -26,12 +26,6 @@ h6 {
     font-weight: 400;
 }
 
-/*columns*/
-.column-heading {
-    font-size: 1.5em;
-    margin-top: 1.5em;
-}
-
 a,
 a:hover,
 a:focus,
@@ -40,11 +34,26 @@ a.active {
     outline: 0;
 }
 
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn.active,
+.open .dropdown-toggle.btn {
+    border-color: #f6bf01;
+    color: rgb(116, 15, 21);
+    background-color: #fec503;
+}
+
+.btn:active,
+.btn.active,
+.open .dropdown-toggle.btn {
+    background-image: none;
+}
+
 .col_no_padding {
     padding-left: 0;
 }
 
-/*forms*/
 .form-error-notice {
     color: rgb(169, 68, 66);
     margin-top: 0.9em;
@@ -56,59 +65,18 @@ a.active {
     font-size: 1.5em;
 }
 
-.card_content_main_heading {
-    font-size: 1.5em;
-}
-
-.heading_1_2 {
-    font-size: 1.2em;
-}
-
-.margin_t_p_0_5 {
-    margin-bottom: 0.5em;
-    margin-top: 0.5em;
-}
-
-.col_no_padding {
-    padding-left: 0;
-}
-
 div.alert.alert-success, div.alert.alert-warning, div.alert.alert-info {
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
 
-.center_text {
-    text-align: center;
-}
-
-.center_up_down {
-    vertical-align: middle;
-}
-
-.padding-top-20 {
-    padding-top: 20px;
-}
-
-.padding-bottom-20 {
-    padding-top: 20px;
-}
-
-.padding-bottom-15 {
-    padding-bottom: 15px;
-}
-
 .navbar-default {
-    background-color: #222;
-}
-
-.navbar-default {
-    background-color: #222;
+    background-color: rgb(116, 15, 21);
 }
 
 .navbar-default .navbar-brand {
     font-family: "Kaushan Script", "Helvetica Neue", Helvetica, Arial, cursive;
-    color: #fed136;
+    color: #fff;
 }
 
 .navbar-default .navbar-brand:hover,
@@ -179,15 +147,6 @@ div.alert.alert-success, div.alert.alert-warning, div.alert.alert-info {
 
     .navbar-default .navbar-nav > .active > a {
         border-radius: 3px;
-    }
-
-    .navbar-default.navbar-shrink {
-        padding: 10px 0;
-        background-color: #222;
-    }
-
-    .navbar-default.navbar-shrink .navbar-brand {
-        font-size: 1.5em;
     }
 }
 

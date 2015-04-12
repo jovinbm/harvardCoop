@@ -46,7 +46,7 @@ module.exports = function (passport, OpenIDStrategy, LocalStrategy) {
             var email = profile.emails[0].value || "";
             var fullName = profile.displayName || "";
 
-            userDB.findUser(openId, error, error, success);
+            userDB.findUserWithOpenId(openId, error, error, success);
 
             function success(theUser) {
                 done(null, theUser, null);
@@ -140,12 +140,14 @@ module.exports = function (passport, OpenIDStrategy, LocalStrategy) {
         }));
 
     passport.serializeUser(function (user, done) {
-        //only save the user openId into the session to keep the data stored low
-        done(null, user.openId);
+        //only save the user uniqueCuid into the session to keep the data stored low
+        done(null, user.uniqueCuid);
     });
 
-    passport.deserializeUser(function (openId, done) {
-        //deserialize the saved openId in session and find the user with the userId
+    passport.deserializeUser(function (uniqueCuid, done) {
+        //deserialize the saved uniqueCuid in session and find the user with the userId
+        userDB.findUserWithUniqueCuid(uniqueCuid, error, error, success);
+
         function error(status) {
             if (status == -1 || status == 0) {
                 next(null, false);
@@ -156,6 +158,5 @@ module.exports = function (passport, OpenIDStrategy, LocalStrategy) {
             done(null, theUser);
         }
 
-        userDB.findUser(openId, error, error, success);
     });
 };

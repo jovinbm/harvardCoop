@@ -1,4 +1,3 @@
-var userDB = require('../db/user_db.js');
 var basic = require('../functions/basic.js');
 var consoleLogger = require('../functions/basic.js').consoleLogger;
 var path = require('path');
@@ -17,10 +16,6 @@ var errorLogger = function (module, text, err) {
     var eL = require('./basic.js').errorLogger;
     return eL('forms.js', module, text, err);
 };
-
-function getTheUser(req) {
-    return req.customData.theUser;
-}
 
 var usernameRegex = /^[a-zA-Z0-9_]*$/;
 var emailRegex = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;

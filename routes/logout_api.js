@@ -1,5 +1,7 @@
 var basic = require('../functions/basic.js');
 var consoleLogger = require('../functions/basic.js').consoleLogger;
+var logout_handler = require('../handlers/logout_handler.js');
+var userDB = require('../db/user_db.js');
 
 var receivedLogger = function (module) {
     var rL = require('../functions/basic.js').receivedLogger;
@@ -16,15 +18,9 @@ var errorLogger = function (module, text, err) {
     return eL('logout_api', module, text, err);
 };
 
-var logout_handler = require('../handlers/logout_handler.js');
-var userDB = require('../db/user_db.js');
-
 
 function getTheUser(req) {
     return req.customData.theUser;
-}
-function getTheCurrentGrillStatus(req) {
-    return req.customData.currentGrillStatus;
 }
 
 module.exports = {
@@ -39,9 +35,9 @@ module.exports = {
     logoutClientSession: function (req, res) {
         var module = 'logoutClientSession';
         receivedLogger(module);
-        userDB.toggleCls(req.user.openId, 0, errorToggle, errorToggle, toggled);
+        userDB.toggleLoggedInIndex(req.user.openId, 0, errorToggle, errorToggle, toggled);
 
-        //toggle the user's customLoggedInStatus
+        //toggle the user's loggedInIndex
         function toggled() {
             logout_handler.logoutClientSession(req, res);
         }
@@ -64,7 +60,7 @@ module.exports = {
     logoutClientFull: function (req, res) {
         var module = 'logoutClientFull';
         receivedLogger(module);
-        userDB.toggleCls(req.user.openId, 0, errorToggle, errorToggle, toggled);
+        userDB.toggleLoggedInIndex(req.user.openId, 0, errorToggle, errorToggle, toggled);
 
         function toggled() {
             logout_handler.logoutClientFull(req, res);
@@ -87,9 +83,9 @@ module.exports = {
     logoutAdminSession: function (req, res) {
         var module = 'logoutAdminSession';
         receivedLogger(module);
-        userDB.toggleCls(req.user.openId, 0, errorToggle, errorToggle, toggled);
+        userDB.toggleLoggedInIndex(req.user.openId, 0, errorToggle, errorToggle, toggled);
 
-        //toggle the user's customLoggedInStatus
+        //toggle the user's loggedInIndex
         function toggled() {
             logout_handler.logoutAdminSession(req, res);
         }
@@ -112,7 +108,7 @@ module.exports = {
     logoutAdminFull: function (req, res) {
         var module = 'logoutAdminFull';
         receivedLogger(module);
-        userDB.toggleCls(req.user.openId, 0, errorToggle, errorToggle, toggled);
+        userDB.toggleLoggedInIndex(req.user.openId, 0, errorToggle, errorToggle, toggled);
 
         function toggled() {
             logout_handler.logoutAdminFull(req, res);

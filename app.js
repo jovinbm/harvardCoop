@@ -1,11 +1,4 @@
-//var dbURL = 'mongodb://localhost:27017/grill';
-//var dbURL = 'mongodb://jovinbm:paka1995@ds049171.mongolab.com:49171/grill';
-var dbURL = 'mongodb://jovinbm:paka1995@dbh55.mongolab.com:27557/grilldev';
-
-
-//THE APP
-//newrelic for logging
-require('newrelic');
+var dbURL = 'mongodb://jovinbm:paka1995@ds029827.mongolab.com:29827/thecoop';
 
 var express = require('express');
 var app = require('express')();
@@ -32,14 +25,10 @@ var middleware = require('./functions/middleware.js');
 var email = require('./functions/email.js');
 var routes = require('./routes/router.js');
 var basicAPI = require('./routes/basic_api.js');
-var grillStatusAPI = require('./routes/grillStatus_api');
-var componentAPI = require('./routes/component_api');
-var orderAPI = require('./routes/order_api');
+var imgAPI = require('./routes/img_api.js');
+var buyAPI = require('./routes/buy_api.js');
 var loginAPI = require('./routes/login_api.js');
 var logoutAPI = require('./routes/logout_api.js');
-
-//db
-var userDB = require('./db/user_db.js');
 
 var receivedLogger = function (module) {
     var rL = require('./functions/basic.js').receivedLogger;
@@ -93,7 +82,7 @@ app.use("/error", express.static(path.join(__dirname, '/public/error')));
 
 app.use(cookieParser());
 app.use(session({
-    key: 'grillkey',
+    key: 'theCoop',
     cookie: {path: '/', httpOnly: true, secure: false, maxAge: 604800000000},
     secret: 'hssjbm12234bsidh)))^Hjdsb',
     store: new MongoStore({mongooseConnection: mongoose.connection}),
@@ -116,12 +105,23 @@ io.on('connection', function (socket) {
     });
 });
 
+
+//COOP API
+app.get('/api/getFeaturedImages', imgAPI.getFeaturedImages);
+app.get('/api/getHotThisWeek', imgAPI.getHotThisWeek);
+app.get('/api/getPromotions', imgAPI.getPromotions);
+app.get('/api/getInspiredItems', imgAPI.getInspiredItems);
+app.get('/api/getRelatedToRecentlyViewed', imgAPI.getRelatedToRecentlyViewed);
+app.get('/api/getDiscover', imgAPI.getDiscover);
+
+app.post('/api/addToCart', buyAPI.addToCart);
+app.post('/api/increaseQuantity', buyAPI.increaseQuantity);
+app.post('/api/decreaseQuantity', buyAPI.decreaseQuantity);
+app.post('/api/removeFromCart', buyAPI.removeFromCart);
+
 app.post('/contactUs', basicAPI.contactUs);
 app.get('/harvardId', loginAPI.clientHarvardLogin);
 app.post('/localUserLogin', loginAPI.localUserLogin);
-app.post('/adminInfoLogin', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.adminInfoLogin);
-app.post('/clientInfoLogin', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.clientInfoLogin);
-
 
 app.post('/harvardId/login', passport.authenticate('openid'));
 app.get('/socket.io/socket.io.js', function (req, res) {
@@ -131,53 +131,12 @@ app.get('/socket.io/socket.io.js', function (req, res) {
 //getting files
 app.get('/', routes.index_Html);
 app.get('/index.html', routes.index_Html);
-app.get('/adminHome.html', middleware.ensureAuthenticated, middleware.addUserData, routes.adminHome_Html);
-app.get('/clientHome.html', middleware.ensureAuthenticated, middleware.addUserData, routes.clientHome_Html);
-app.get('/admin.html', middleware.ensureAuthenticated, middleware.addUserData, middleware.checkCustomLoggedInStatus, routes.admin_Html);
-app.get('/adminProfile.html', middleware.ensureAuthenticated, middleware.addUserData, middleware.checkCustomLoggedInStatus, routes.admin_profile_Html);
-app.get('/client.html', middleware.ensureAuthenticated, middleware.addUserData, middleware.checkCustomLoggedInStatus, routes.client_Html);
-app.get('/clientProfile.html', middleware.ensureAuthenticated, middleware.addUserData, middleware.checkCustomLoggedInStatus, routes.client_profile_Html);
 //end of getting files
 
-
-//login api
-app.get('/api/getTemporarySocketRoom', loginAPI.getTemporarySocketRoom);
-app.post('/api/getAllGrillStatuses', loginAPI.getAllGrillStatuses);
+app.get('/api/getUserData', loginAPI.getUserData);
 app.post('/createAccount', loginAPI.createAccount);
 app.post('/checkIfFullyRegistered', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.checkIfFullyRegistered);
 app.post('/completeAccountRegistration', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.completeAccountRegistration);
-app.post('/api/adminHomeStartUp', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.adminHomeStartUp);
-app.post('/api/clientHomeStartUp', middleware.ensureAuthenticatedAngular, middleware.addUserData, loginAPI.clientHomeStartUp);
-//end of login api
-
-
-//api inside the grill order
-//getMyRoom is also accessed from login therefore don't disable, ie, don't put customLoggedInStatus check
-app.get('/api/getMyRoom', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, basicAPI.getSocketRoom);
-app.post('/api/adminStartUp', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, basicAPI.adminStartUp);
-app.post('/api/clientStartUp', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, basicAPI.clientStartUp);
-
-app.post('/api/openGrill', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, middleware.checkGrillIsClosed, grillStatusAPI.openGrill);
-app.post('/api/closeGrill', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, middleware.checkGrillIsOpen, grillStatusAPI.closeGrill);
-app.post('/api/createGrill', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.checkUserIsAdmin, grillStatusAPI.createGrill);
-app.post('/api/deleteGrill', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.checkUserIsAdmin, grillStatusAPI.deleteGrill);
-app.post('/api/getCurrentGrillStatus', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, grillStatusAPI.getCurrentGrillStatus);
-app.post('/api/getAllComponentsIndexNames', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, grillStatusAPI.getAllComponentsIndexNames);
-app.post('/api/updateAvailableComponents', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, grillStatusAPI.updateAvailableComponents);
-
-app.post('/api/addComponent', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, middleware.checkGrillIsClosed, componentAPI.addComponent);
-app.post('/api/saveEditedComponent', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, middleware.checkGrillIsClosed, componentAPI.saveEditedComponent);
-app.post('/api/deleteComponent', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, middleware.checkGrillIsClosed, componentAPI.deleteComponent);
-
-app.post('/api/getAllComponents', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, componentAPI.getAllComponents);
-app.post('/api/getAvailableComponents', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, componentAPI.getAvailableComponents);
-
-app.post('/api/getAdminClientOrders', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, orderAPI.getAdminClientOrders);
-app.post('/api/getMyRecentOrders', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, orderAPI.getMyRecentOrders);
-app.post('/api/newClientOrder', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkGrillIsOpen, orderAPI.newClientOrder);
-app.post('/api/markOrderAsDone', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, orderAPI.markOrderAsDone);
-app.post('/api/markOrderAsDeclined', middleware.ensureAuthenticatedAngular, middleware.addUserData, middleware.addUserGrillStatus, middleware.checkCustomLoggedInStatusAngular, middleware.checkUserIsAdmin, orderAPI.markOrderAsDeclined);
-//end of api inside the grill order
 
 //logout api
 app.post('/api/logoutHarvardLogin', middleware.ensureAuthenticatedAngular, middleware.addUserData, logoutAPI.logoutHarvardLogin);
@@ -197,7 +156,7 @@ app.use(function (req, res, next) {
 
 // error handlers
 app.use(function (err, req, res, next) {
-    consoleLogger(errorLogger('404 Handler', 'New 404 DEVELOPMENT error'));
+    consoleLogger(errorLogger('404 Handler', 'New 404 DEVELOPMENT error', err));
     res.status(err.status);
     res.sendFile(path.join(__dirname, './public/error/', '404.html'));
 });
